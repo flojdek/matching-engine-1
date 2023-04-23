@@ -23,6 +23,8 @@ Some people code immediately, some people think more and need more breaks to thi
 I do have a kid at home so wasn't easy to do pro-longed focused time spans after work of course.
 I could easily spend hours and hours just writing tests for this.
 
+Not a C++ expert for a long while, but did C++ long enough to hopefully not make any stupid mistakes here. Happy to work with it again for sure!
+
 == Improvements ==
 
 * Each type like Quantity or Price could be its own class so we get proper typing and for example don't mix up quantity or price by mistake.
