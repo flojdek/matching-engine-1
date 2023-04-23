@@ -1,8 +1,6 @@
 #ifndef ERROR_HPP
 #define ERROR_HPP
 
-#include <string>
-
 struct Error {
     enum TypeT {
         INVALID_QTY,

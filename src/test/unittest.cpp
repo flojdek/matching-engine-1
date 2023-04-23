@@ -1,9 +1,11 @@
 #include <chrono>
 #include <algorithm>
+#include <deque>
 
 #include "gtest/gtest.h"
 #include "../Markets.hpp"
 #include "../Solution.hpp"
+#include "../Trade.hpp"
 
 using namespace std::chrono;
 

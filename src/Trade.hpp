@@ -1,9 +1,6 @@
 #ifndef TRADE_HPP
 #define TRADE_HPP
 
-#include <string>
-#include <deque>
-
 #include "Order.hpp"
 
 class Trade {

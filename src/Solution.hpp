@@ -2,9 +2,6 @@
 #define SOLUTION_HPP
 
 #include <iostream>
-#include <algorithm>
-#include <unordered_map>
-#include <memory>
 
 #include "Markets.hpp"
 
