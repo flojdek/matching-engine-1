@@ -110,7 +110,7 @@ class OrderBook {
             }
             if (incoming.quantity > 0) {
                 m_onNew(incoming);
-                incomingBook.emplace_black(incoming.price, incoming);
+                incomingBook.emplace(incoming.price, incoming);
             }
         }
 };
