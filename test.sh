@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t gemini_interview . && docker run -i --rm gemini_interview /app/build/test/unittest
+docker build -t toy_me . && docker run -i --rm toy_me /app/build/test/unittest
