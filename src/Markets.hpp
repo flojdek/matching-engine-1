@@ -28,6 +28,7 @@ class Markets {
         void execute(const Order& incoming) {
             auto it = m_orderBookByInstrument.find(incoming.instrument);
             if (it == m_orderBookByInstrument.end()) {
+                // This market doesn't exist yet - create first then add.
                 std::unique_ptr<OrderBook> ob(
                     new OrderBook(
                         [&](const Order& order){ m_onNew(order); },
@@ -40,6 +41,7 @@ class Markets {
                 ob->execute(incoming);
                 m_orderBookByInstrument.emplace(incoming.instrument, std::move(ob));
             } else {
+                // Have it already, just execute.
                 it->second->execute(incoming);
             }
         }

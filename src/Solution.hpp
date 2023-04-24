@@ -28,6 +28,7 @@ struct Solution {
     }
 
     void onNew(const Order& order) {
+        // Got in as open order so we keep track of it for our state purposes.
         if (order.side == Order::ASK) {
             auto it = openAsksByArrival.emplace(openAsksByArrival.end(), order);
             openAskItByOrderId.emplace(order.orderId, it);
@@ -43,6 +44,7 @@ struct Solution {
     }
 
     void onPartialFill(const Order& order) {
+        // Just update quantities of our state so we keep proper track how much is left.
         if (order.side == Order::ASK) {
             auto it = openAskItByOrderId.find(order.orderId);
             if (it != openAskItByOrderId.end()) it->second->quantity = order.quantity;
@@ -53,6 +55,7 @@ struct Solution {
     }
 
     void onFullFill(const Order& order) {
+        // Update our data structures.
         if (order.side == Order::ASK) {
             auto it = openAskItByOrderId.find(order.orderId);
             if (it != openAskItByOrderId.end()) openAsksByArrival.erase(it->second);

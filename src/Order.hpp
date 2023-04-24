@@ -6,8 +6,8 @@
 
 class Order {
     public:
-        typedef uint32_t PriceT;
-        typedef uint64_t QtyT;
+        typedef uint32_t PriceT; // Should be good enough for crypto price converted to integral.
+        typedef uint64_t QtyT; // Definitely more than enough for crypto quantities in atomic units.
         typedef std::string OrderIdT;
         enum SideT { BID, ASK };
         enum OrderT { LIMIT };

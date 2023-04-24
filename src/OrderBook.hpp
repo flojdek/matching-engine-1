@@ -16,6 +16,10 @@ class OrderBook {
         typedef std::pair<OrdersT, OrdersT> BidsAndAsksT;
 
         OrderBook() = delete;
+        /**
+         * The callbacks are synchronous in this case but ideally we would be publishing events/messages
+         * on some bus and other downstream can update their state accordingly. 
+         */
         OrderBook(
             OnOrderChangeFuncT onNew,
             OnOrderChangeFuncT onPartialFill,
@@ -106,7 +110,7 @@ class OrderBook {
             }
             if (incoming.quantity > 0) {
                 m_onNew(incoming);
-                incomingBook.emplace(incoming.price, incoming);
+                incomingBook.emplace_black(incoming.price, incoming);
             }
         }
 };
