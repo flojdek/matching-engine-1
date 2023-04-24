@@ -75,6 +75,10 @@ struct Solution {
         }
     }
 
+    OrderBook::BidsAndAsksT getBidsAndAsks(const std::string& instrument) const {
+        return markets.getBidsAndAsks(instrument);
+    }
+
     std::deque<Order> getOpenOrdersByArrival() const {
         std::deque<Order> ret;
         for (auto it = openAsksByArrival.begin(); it != openAsksByArrival.end(); it++) {

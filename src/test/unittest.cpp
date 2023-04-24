@@ -9,37 +9,35 @@
 
 using namespace std::chrono;
 
-TEST(MatchingEngineTest, PerfBigAskSmallBids) { 
-    TradesT trades;
-    Markets ms(
-        [](const Order&) {},
-        [](const Order&) {},
-        [](const Order&) {},
-        [&](const Trade& t) { trades.emplace_back(t); },
-        [](const Error&) {}
-    );
+TEST(MatchingEngineTest, Match0_lonesome_bid) { 
+    Solution s;
 
-    Order::QtyT N = 100'000;
-    auto bigAsk = Order("a1", Order::ASK, "BTCUSD", N, 10);
-    auto smallBid = Order("b1", Order::BID, "BTCUSD", 1, 10);
-    auto begin = std::chrono::high_resolution_clock::now();
-    ms.execute(bigAsk);
-    for (Order::QtyT i = 0; i < N; ++i) {
-        ms.execute(smallBid);
-    }
-    auto end = std::chrono::high_resolution_clock::now();
-    auto dur_ms = duration_cast<std::chrono::milliseconds>(end - begin).count();
-    std::cout << "millis: " << dur_ms << std::endl;
-    std::cout << "tps:    " << (N/(dur_ms/1000.0)) << std::endl;
-    ASSERT_EQ(trades.size(), N);
+    auto bid1 = Order("b1", Order::BID, "BTCUSD", 1, 10);
+    s.execute(bid1);
+    ASSERT_TRUE(s.trades.empty());
 
-    // On my Mac M1 this reported:
-    // millis: 74
-    // tps:    1.35135e+06
-    // Which I guess is not horrible.
+    OrderBook::OrdersT bids, asks;
+    std::tie(bids, asks) = s.markets.getBidsAndAsks("BTCUSD");
+    ASSERT_EQ(bids.size(), 1);
+    ASSERT_EQ(bids.at(0), bid1);
+    ASSERT_EQ(asks.size(), 0);
 }
 
-TEST(MatchingEngineTest, Match1) { 
+TEST(MatchingEngineTest, Match0_lonesome_ask) { 
+    Solution s;
+
+    auto ask1 = Order("a1", Order::ASK, "BTCUSD", 1, 10);
+    s.execute(ask1);
+    ASSERT_EQ(s.trades.size(), 0);
+
+    OrderBook::OrdersT bids, asks;
+    std::tie(bids, asks) = s.markets.getBidsAndAsks("BTCUSD");
+    ASSERT_EQ(bids.size(), 0);
+    ASSERT_EQ(asks.size(), 1);
+    ASSERT_EQ(asks.at(0), ask1);
+}
+
+TEST(MatchingEngineTest, Match1_incoming_ff_standing_ff) { 
     Solution s;
 
     auto bid1 = Order("b1", Order::BID, "BTCUSD", 1, 10);
@@ -50,6 +48,49 @@ TEST(MatchingEngineTest, Match1) {
     s.execute(ask1);
     ASSERT_EQ(s.trades.size(), 1);
     ASSERT_EQ(s.trades.at(0), Trade("BTCUSD", "a1", "b1", 1, 10));
+
+    OrderBook::OrdersT bids, asks;
+    std::tie(bids, asks) = s.markets.getBidsAndAsks("BTCUSD");
+    ASSERT_EQ(bids.size(), 0);
+    ASSERT_EQ(asks.size(), 0);
+}
+
+TEST(MatchingEngineTest, Match1_incoming_pf_standing_ff) { 
+    Solution s;
+
+    auto bid1 = Order("b1", Order::BID, "BTCUSD", 1, 10);
+    s.execute(bid1);
+    ASSERT_TRUE(s.trades.empty());
+
+    auto ask1 = Order("a1", Order::ASK, "BTCUSD", 2, 10);
+    s.execute(ask1);
+    ASSERT_EQ(s.trades.size(), 1);
+    ASSERT_EQ(s.trades.at(0), Trade("BTCUSD", "a1", "b1", 1, 10));
+
+    OrderBook::OrdersT bids, asks;
+    std::tie(bids, asks) = s.markets.getBidsAndAsks("BTCUSD");
+    ASSERT_EQ(bids.size(), 0);
+    ASSERT_EQ(asks.size(), 1);
+    ASSERT_EQ(asks.at(0), Order("a1", Order::ASK, "BTCUSD", 1, 10));
+}
+
+TEST(MatchingEngineTest, Match1_incoming_ff_standing_pf) { 
+    Solution s;
+
+    auto bid1 = Order("b1", Order::BID, "BTCUSD", 2, 10);
+    s.execute(bid1);
+    ASSERT_TRUE(s.trades.empty());
+
+    auto ask1 = Order("a1", Order::ASK, "BTCUSD", 1, 10);
+    s.execute(ask1);
+    ASSERT_EQ(s.trades.size(), 1);
+    ASSERT_EQ(s.trades.at(0), Trade("BTCUSD", "a1", "b1", 1, 10));
+
+    OrderBook::OrdersT bids, asks;
+    std::tie(bids, asks) = s.markets.getBidsAndAsks("BTCUSD");
+    ASSERT_EQ(bids.size(), 1);
+    ASSERT_EQ(bids.at(0), Order("b1", Order::BID, "BTCUSD", 1, 10));
+    ASSERT_EQ(asks.size(), 0);
 }
 
 TEST(MatchingEngineTest, OrderByArrival1) { 
@@ -99,6 +140,44 @@ TEST(MatchingEngineTest, OrderByArrival2) {
     ASSERT_EQ(openByArrival.size(), 2);
     ASSERT_EQ(openByArrival.at(0), Order("b1", Order::BID, "BTCUSD", 1, 10));
     ASSERT_EQ(openByArrival.at(1), Order("b2", Order::BID, "BTCUSD", 1, 11));
+
+    OrderBook::OrdersT bids, asks;
+    std::tie(bids, asks) = s.markets.getBidsAndAsks("BTCUSD");
+    ASSERT_EQ(bids.size(), 2);
+    ASSERT_EQ(bids.at(0), Order("b2", Order::BID, "BTCUSD", 1, 11));
+    ASSERT_EQ(bids.at(1), Order("b1", Order::BID, "BTCUSD", 1, 10));
+    ASSERT_EQ(asks.size(), 0);
+}
+
+// Not really a test... just convenient to put here for now.
+TEST(MatchingEngineTest, PerfBigAskSmallBids) { 
+    TradesT trades;
+    Markets ms(
+        [](const Order&) {},
+        [](const Order&) {},
+        [](const Order&) {},
+        [&](const Trade& t) { trades.emplace_back(t); },
+        [](const Error&) {}
+    );
+
+    Order::QtyT N = 1'000'000;
+    auto bigAsk = Order("a1", Order::ASK, "BTCUSD", N, 10);
+    auto smallBid = Order("b1", Order::BID, "BTCUSD", 1, 10);
+    auto begin = std::chrono::high_resolution_clock::now();
+    ms.execute(bigAsk);
+    for (Order::QtyT i = 0; i < N; ++i) {
+        ms.execute(smallBid);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto dur_ms = duration_cast<std::chrono::milliseconds>(end - begin).count();
+    std::cout << "millis: " << dur_ms << std::endl;
+    std::cout << "tps:    " << (N/(dur_ms/1000.0)) << std::endl;
+    ASSERT_EQ(trades.size(), N);
+
+    // On my Mac M1 this reported:
+    // millis: 74
+    // tps:    1.35135e+06
+    // Which I guess is not horrible.
 }
 
 int main(int argc, char* argv[]) {

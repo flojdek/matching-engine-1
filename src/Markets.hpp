@@ -44,6 +44,14 @@ class Markets {
             }
         }
 
+        OrderBook::BidsAndAsksT getBidsAndAsks(const std::string& instrument) const {
+            auto it = m_orderBookByInstrument.find(instrument);
+            if (it != m_orderBookByInstrument.end()) {
+                return it->second->getBidsAndAsks();
+            }
+            return OrderBook::BidsAndAsksT();
+        }
+
     private:
         std::unordered_map<std::string, std::unique_ptr<OrderBook>> m_orderBookByInstrument;
 

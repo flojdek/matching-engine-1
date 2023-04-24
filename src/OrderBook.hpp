@@ -12,6 +12,8 @@ class OrderBook {
         typedef std::function<void(const Order&)> OnOrderChangeFuncT;
         typedef std::function<void(const Trade&)> OnTradeFuncT;
         typedef std::function<void(const Error&)> OnErrorFuncT;
+        typedef std::deque<Order> OrdersT;
+        typedef std::pair<OrdersT, OrdersT> BidsAndAsksT;
 
         OrderBook() = delete;
         OrderBook(
@@ -37,6 +39,13 @@ class OrderBook {
                     m_onError(Error { .type = Error::INVALID_SIDE });
                     break;
             }
+        }
+
+        BidsAndAsksT getBidsAndAsks() const {
+            OrdersT bids, asks;
+            for (auto it = m_bids.begin(); it != m_bids.end(); ++it) bids.emplace_back(it->second);
+            for (auto it = m_asks.begin(); it != m_asks.end(); ++it) asks.emplace_back(it->second);
+            return std::make_pair(bids, asks);
         }
 
     private:
