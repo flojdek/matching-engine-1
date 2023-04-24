@@ -123,6 +123,20 @@ TEST(MatchingEngineTest, OrderByArrival1) {
     ASSERT_EQ(openByArrival.at(1), Order("13471", Order::BID, "BTCUSD", 4, 9971));
     ASSERT_EQ(openByArrival.at(2), Order("11431", Order::BID, "ETHUSD", 4, 175));
     ASSERT_EQ(openByArrival.at(3), Order("45691", Order::BID, "ETHUSD", 3, 180));
+
+    OrderBook::OrdersT btcbids, btcasks;
+    std::tie(btcbids, btcasks) = s.markets.getBidsAndAsks("BTCUSD");
+    ASSERT_EQ(btcasks.size(), 1);
+    ASSERT_EQ(btcasks.at(0), Order("zod42", Order::ASK, "BTCUSD", 2, 10001));
+    ASSERT_EQ(btcbids.size(), 1);
+    ASSERT_EQ(btcbids.at(0), Order("13471", Order::BID, "BTCUSD", 4, 9971));
+
+    OrderBook::OrdersT ethbids, ethasks;
+    std::tie(ethbids, ethasks) = s.markets.getBidsAndAsks("ETHUSD");
+    ASSERT_EQ(ethasks.size(), 0);
+    ASSERT_EQ(ethbids.size(), 2);
+    ASSERT_EQ(ethbids.at(0), Order("45691", Order::BID, "ETHUSD", 3, 180));
+    ASSERT_EQ(ethbids.at(1), Order("11431", Order::BID, "ETHUSD", 4, 175));
 }
 
 TEST(MatchingEngineTest, OrderByArrival2) { 
