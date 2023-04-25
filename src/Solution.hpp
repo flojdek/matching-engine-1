@@ -58,10 +58,16 @@ struct Solution {
         // Update our data structures.
         if (order.side == Order::ASK) {
             auto it = openAskItByOrderId.find(order.orderId);
-            if (it != openAskItByOrderId.end()) openAsksByArrival.erase(it->second);
+            if (it != openAskItByOrderId.end()) {
+                openAsksByArrival.erase(it->second);
+                openAskItByOrderId.erase(it);
+            }
         } else if (order.side == Order::BID) {
             auto it = openBidItByOrderId.find(order.orderId);
-            if (it != openBidItByOrderId.end()) openBidsByArrival.erase(it->second);
+            if (it != openBidItByOrderId.end()) {
+                openBidsByArrival.erase(it->second);
+                openBidItByOrderId.erase(it);
+            }
         }
     }
 

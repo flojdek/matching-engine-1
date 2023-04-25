@@ -1,6 +1,7 @@
 #include <chrono>
 #include <algorithm>
 #include <deque>
+#include <string>
 
 #include "gtest/gtest.h"
 #include "../Markets.hpp"
@@ -176,10 +177,10 @@ TEST(MatchingEngineTest, PerfBigAskSmallBids) {
 
     Order::QtyT N = 1'000'000;
     auto bigAsk = Order("a1", Order::ASK, "BTCUSD", N, 10);
-    auto smallBid = Order("b1", Order::BID, "BTCUSD", 1, 10);
     auto begin = std::chrono::high_resolution_clock::now();
     ms.execute(bigAsk);
     for (Order::QtyT i = 0; i < N; ++i) {
+        auto smallBid = Order(std::to_string(i), Order::BID, "BTCUSD", 1, 10);
         ms.execute(smallBid);
     }
     auto end = std::chrono::high_resolution_clock::now();
